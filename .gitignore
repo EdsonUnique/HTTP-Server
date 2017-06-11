@@ -1,0 +1,176 @@
+package HttpServer;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.Socket;
+import java.net.URLDecoder;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * 获取请求信息，并分析请求信息，存入数据库或与数据库数据校验
+ * @author Edson
+ *
+ */
+@SuppressWarnings("all")
+public class Request {
+	
+	private Map<String,Map<String,List<String>>>clientInfo=null;//存储客户相关信息，不重名情况下
+	private Map<String,List<String>>paramsValue=null;//存储参数信息
+	private Socket client=null;
+	private InputStream in=null;
+	private String method=null;
+	private String firstLine=null;//请求信息的第一行
+	private final String CRFL="\r\n";
+	private String uri=null;//客户请求的资源
+	private String name=null;//用户名字作为主键
+	
+	public Request(){
+		paramsValue=new HashMap<String,List<String>>();
+		clientInfo=new HashMap<String,Map<String,List<String>>>();
+	}
+	
+	public Request(Socket client){
+		this();
+		this.client=client;
+		try {
+			in=client.getInputStream();
+			getRequest();
+		} catch (IOException e) {
+			return;
+		}
+	}
+	
+	public String decoder(String str){//解决正文乱码问题
+		
+		try {
+			
+			if(str!=null || !("".equals(str))){
+				return URLDecoder.decode(str, "UTF-8");
+			}
+			return str;
+		} catch (UnsupportedEncodingException e) {
+			return str;
+		}
+		
+	}
+	
+	public String getName() {
+		return name;
+	}
+
+	public Map<String, Map<String, List<String>>> getClientInfo() {
+		return clientInfo;
+	}
+
+	public  String getUri() {
+		return uri;
+	}
+
+	public void getRequest(){
+		//读取http请求信息
+		StringBuffer info=new StringBuffer();//存储请求信息
+		byte[] bytes=new byte[10240];
+		try {
+			int len=in.read(bytes);
+			info.append(new String(bytes));
+		} catch (IOException e) {
+			return;
+		}
+		
+		//分析http信息，储存客户的参数信息
+		firstLine=info.substring(0, info.indexOf(CRFL));
+		method=firstLine.substring(0,info.indexOf(" "));
+		StringBuffer params=new StringBuffer();//存储参数内容
+		uri=firstLine.substring(info.indexOf("/"),info.indexOf("HTTP/1.1")).trim();//不存在get参数的uri
+		
+		if("get".equalsIgnoreCase(method)){//get方法，参数在第一行 uri之后
+			
+			if(firstLine.contains("?")){//是否存在参数
+				uri=firstLine.substring(info.indexOf("/"),info.indexOf("?")).trim();
+				params.append(firstLine.substring(info.indexOf("?")+1,info.indexOf("HTTP/1.1")).trim());//去掉尾端空格
+			}else{
+				params=null;
+			}
+			
+			
+		}else if("post".equalsIgnoreCase(method)){//post方法，存在请求正文
+			
+			if(info.substring(info.lastIndexOf(CRFL)).trim().length()>0){//post方式，存在参数
+				params.append(info.substring(info.lastIndexOf(CRFL)).trim());
+			}else{
+				params=null;
+			}
+			
+		}
+		
+		//将参数存入容器内     uname=null&pwd=23134&fav=1&fav=2
+		if(params!=null){//存在参数
+			if(params.indexOf("&")!=-1){//存在多个参数
+				
+				String []keyValues=params.toString().split("&");//将参数一对对存放
+				for(String str:keyValues){
+					
+					List values=new ArrayList();
+					
+					String [] param=str.split("=");
+					if(!paramsValue.containsKey(param[0])){//数据容器内不存在该键值，存入
+						
+						values.add(param[1]);
+						
+						paramsValue.put(param[0],values);
+					}else{//存在键值，即存入值即可
+						paramsValue.get(param[0]).add(param[1]);
+					}
+					
+					if(name==null){
+						name=decoder(param[1]);//存储客户姓名
+					}
+					
+				}	
+				
+			}else{//存在一个参数
+				List values=new ArrayList<>();
+				String[] keyValue=params.toString().split("=");
+				values.add(keyValue[1]);
+				name=keyValue[1];
+				paramsValue.put(keyValue[0],values);
+			}
+			
+			if(name!=null){//客户名为空则不存入数据
+				clientInfo.put(name, paramsValue);//存入客户信息
+			}
+			
+		}
+	}
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
