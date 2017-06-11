@@ -1,0 +1,27 @@
+package HttpServer;
+
+import Servlet.Servlet;
+
+/**
+ * uri与WebApps映射
+ * @author Edson
+ *
+ */
+public class ServletContext {
+	
+	public void serve(Request req,Response rep){
+		
+		String uri=req.getUri();
+		
+		if(!WebApps.getContext().containsKey(uri)){
+			rep.setCode(404).pushResponse();
+		}else{
+			
+			try {
+				((Servlet) Class.forName(WebApps.getContext().get(uri)).newInstance()).service(req, rep).pushResponse();
+			} catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+				rep.setCode(500).pushResponse();//反射出错，服务器内部问题
+			}
+		}
+	}
+}
