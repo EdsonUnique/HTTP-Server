@@ -1,0 +1,101 @@
+package HttpServer;
+
+import java.io.*;
+import java.net.*;
+import java.util.Date;
+
+import org.junit.Test;
+
+
+/**
+ * 服务器端
+ * @author Edson
+ *
+ */
+public class Server {
+	private ServerSocket server=null;
+	private Socket client=null;
+	private boolean isShutdown=false;
+	private int code=200;
+	
+	
+	@Test
+	public void start() {
+		try {
+			server=new ServerSocket(8000);
+			
+			while(!isShutdown){
+				client=server.accept();
+				new Thread(new Dispatcher(client,code)).start();
+			}
+			
+			if(isShutdown){
+				stop();
+			}
+			
+		} catch (IOException e) {
+			stop();
+		}
+		
+
+	}	
+
+	public  void stop() {
+		
+		CloseUtils.closeClient(client);
+		CloseUtils.closeSerevr(server);
+		
+		
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
