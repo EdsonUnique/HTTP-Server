@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<WebApps>
+	<Servlet>
+		<Servlet-name>Servlet.LoginServlet</Servlet-name>
+		<Uri-name>/login</Uri-name>
+	</Servlet>
+	
+	<Servlet>
+		<Servlet-name>Servlet.RegisterServlet</Servlet-name>
+		<Uri-name>/register</Uri-name>
+	</Servlet>
+	
+</WebApps>
