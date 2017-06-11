@@ -1,0 +1,65 @@
+package HttpServer;
+
+import java.io.Closeable;
+import java.io.IOException;
+import java.net.ServerSocket;
+import java.net.Socket;
+
+/**
+ * 关闭流操作
+ * @author Edson
+ *
+ */
+public class CloseUtils {
+
+	public static void closeAll(Closeable...io){
+		for(Closeable obj:io){
+			try {
+				if(obj!=null)obj.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	public static void closeSerevr(ServerSocket server){
+		try {
+			server.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public static void closeClient(Socket client){
+		try {
+			client.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
