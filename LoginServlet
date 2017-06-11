@@ -1,0 +1,23 @@
+package Servlet;
+
+import HttpServer.Request;
+import HttpServer.Response;
+/**
+ * 登记响应正文
+ * @author Edson
+ *
+ */
+public class LoginServlet extends Servlet {
+
+	@Override
+	public Response service(Request req, Response rep) {
+		
+		StringBuffer content=new StringBuffer();//响应正文
+		content.append("<html><head><title>响应</title></head><body><p>")
+				.append("Hello!").append(req.getName()+"</p></body></html>");
+		rep.setContent(content.toString());
+		
+		return rep;
+	}
+
+}
