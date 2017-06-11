@@ -1,0 +1,93 @@
+package HttpServer;
+
+import java.io.*;
+import java.net.Socket;
+import java.util.Date;
+/**
+ * 封装响应：响应头  响应正文
+ * @author Edson
+ *
+ */
+public class Response {
+
+	private static BufferedWriter bw=null;
+	private static final String CRFL="\r\n";
+	private static StringBuffer content;//
+	private static StringBuffer headInfo;//存储响应头信息
+	private static int code=200;//状态码
+	private static Socket client=null;
+	
+	public Response(){
+		content=new StringBuffer();
+		headInfo=new StringBuffer();
+	}
+	
+	public Response(Socket client,int code){
+		this();
+		this.client=client;
+		this.code=code;
+	}
+	
+	public Response(Socket client){
+		this();
+		this.client=client;
+	}
+	
+	public Response setCode(int code) {
+		Response.code = code;
+		return this;
+	}
+
+	public Response setContent(String str){
+		
+		/*StringBuffer content=new StringBuffer();//响应正文
+		content.append("<html><head><title>响应</title></head><body><p>I response you</p></body></html>");*/
+		
+		content.append(str);
+		return this;
+	}
+	
+	private void setHeadInfo(){
+		
+		//1 http版本协议  状态码  状态描述
+		headInfo.append("HTTP/1.1");
+		
+		switch(code){
+			case 200:headInfo.append(" "+code+" OK").append(CRFL);break;
+			case 404:headInfo.append(" "+code+" File Not Found").append(CRFL);break;
+			case 500:headInfo.append(" "+code+" Server Error").append(CRFL);break;
+			case 400:headInfo.append(" "+code+" Wrong Request").append(CRFL);break;
+		}
+		
+		//2 响应头
+		headInfo.append("Content-Type:text/html; charset=UTF-8").append(CRFL);
+		headInfo.append("Date:").append(new Date()).append(CRFL);
+		headInfo.append("Connection:keep-alive").append(CRFL);
+				
+	}
+	
+	public void pushResponse(){
+
+		setHeadInfo();
+		
+		//字节长度，在正文内容完成赋值后添加
+		headInfo.append("Content-Length:").append(content.toString().getBytes().length).append(CRFL);//字节长度
+		headInfo.append(CRFL);
+		//响应文
+		headInfo.append(content);
+
+		//响应输出
+		try {
+			//写出响应
+			bw=new BufferedWriter(new OutputStreamWriter(client.getOutputStream()));
+
+			bw.write(headInfo.toString());
+			bw.flush();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}finally{
+			CloseUtils.closeAll(bw);
+		}
+	}
+	
+}
