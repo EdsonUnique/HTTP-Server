@@ -1,0 +1,14 @@
+package Servlet;
+
+import HttpServer.Request;
+import HttpServer.Response;
+
+/**
+ * 封装响应正文
+ * @author Edson
+ *
+ */
+public abstract class Servlet {
+
+	public abstract Response service(Request req,Response rep);
+}
