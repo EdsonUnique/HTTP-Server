@@ -1,0 +1,51 @@
+package HttpServer;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.dom4j.Document;
+import org.dom4j.DocumentException;
+import org.dom4j.Node;
+import org.dom4j.io.SAXReader;
+
+import Servlet.RegisterServlet;
+import Servlet.Servlet;
+
+public class WebApps {
+
+	/**
+	 * 使用反射存储uri和Servlet的对应关系，减少内存，提高效率
+	 */
+	private static Map<String,String> context;
+	
+	
+	static{
+		//dom4j解析文档
+        SAXReader reader = new SAXReader();
+        try {
+			Document document = reader.read("src/Servlet/web.xml");
+			context=new HashMap<String,String>();
+			
+			 List uri= document.selectNodes( "//WebApps/Servlet/Uri-name");
+			 List servlet = document.selectNodes( "//WebApps/Servlet/Servlet-name");
+			 
+			 
+			//解析到的文档内容放入容器 
+			for(int i=0;i<uri.size();i++){
+				context.put(((Node)uri.get(i)).getText(), ((Node)servlet.get(i)).getText());
+			}
+			
+			
+		} catch (DocumentException e) {
+			e.printStackTrace();
+		}
+		
+	}
+
+	public static Map<String, String> getContext() {
+		return context;
+	}
+	
+	
+}
